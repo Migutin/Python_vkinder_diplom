@@ -11,7 +11,9 @@ parametr_search = {'city':'',
                    'age_min':'',
                    'age_max':''}
 
-
+dict_user_get = []
+dict_search = []
+result = []
 class vk_group:
     def __init__(self):
         print('Vkinder успешно запущен')
@@ -21,43 +23,37 @@ class vk_group:
     def write_msg(self, user_id, message):
         self.vk.method('messages.send', {'user_id': user_id, 'message': message, 'random_id': randrange(10 ** 7), })
 
-    def name(self, user_id):
-        """Получение имя пользователя"""
-        url = f'https://api.vk.com/method/users.get'
-        params = {'access_token': user_token,
-                  'user_ids': user_id,
-                  'v': v}
-        req = requests.get(url, params=params)
-        response = req.json()
+
+    def user_get(self, user_id):
+        """Получение данных api"""
         try:
-            dict_info = response['response']
-            for keys_item in dict_info:
-                first_name = keys_item.get('first_name')
-                return first_name
+            dict_info = self.vk.method('users.get', {'access_token': user_token,
+                                           'fields': 'city,sex,bdate',
+                                           'user_ids': user_id,
+                                           'v': v})
+            dict_user_get.append(dict_info[0])
+            return dict_user_get
         except KeyError:
             self.write_msg(user_id, 'Введен некорректный user_token')
+
+    def name(self,user_id):
+        """Получение имя пользователя"""
+        for keys_item in dict_user_get:
+                first_name = keys_item.get('first_name')
+                return first_name
 
 
     def city(self, user_id):
         """Получение названия города пользователя"""
-        url = f'https://api.vk.com/method/users.get'
-        params = {'access_token': user_token,
-                  'fields': 'city',
-                  'user_ids': user_id,
-                  'v': v}
-        req = requests.get(url, params=params)
-        response = req.json()
-        try:
-            dict_info = response['response']
-            if parametr_search['city'] != '':
+        if parametr_search['city'] != '':
                 city = parametr_search['city']
                 return city
-            else:
-                for keys_item in dict_info:
+        else:
+                for keys_item in dict_user_get:
                     if 'city' in keys_item:
                         city_base = keys_item.get('city')
                         city=city_base['title']
-                        id=str(city_base.get('id'))
+                        # id=str(city_base.get('id'))
                         return city
                     elif 'city' not in keys_item:
                         self.write_msg(user_id, 'Введите название вашего города: ')
@@ -68,8 +64,6 @@ class vk_group:
                                 return str(city)
                             else:
                                 break
-        except KeyError:
-            self.write_msg(user_id, 'Введен некорректный user_token')
 
     def city_edit(self,user_id):
         """Изменение названия города пользователя"""
@@ -105,28 +99,17 @@ class vk_group:
 
     def gender(self, user_id):
         """Получение пола человека для поиска"""
-        url = f'https://api.vk.com/method/users.get'
-        params = {'access_token': user_token,
-                  'fields': 'sex',
-                  'user_ids': user_id,
-                  'v': v}
-        req = requests.get(url, params=params)
-        response = req.json()
-        try:
-            dict_info = response['response']
-            if parametr_search['sex'] != '':
+        if parametr_search['sex'] != '':
                 sex = parametr_search['sex']
                 return sex
-            else:
-                for keys_item in dict_info:
+        else:
+                for keys_item in dict_user_get:
                     sex_gender = keys_item.get('sex')
                     if sex_gender == 1:
                         sex = 2
                     else:
                         sex = 1
                     return sex
-        except KeyError:
-                self.write_msg(user_id, 'Введен некорректный user_token')
 
 
     def gender_edit(self,user_id):
@@ -164,20 +147,11 @@ class vk_group:
 
     def age_min(self, user_id):
         """Получение минимального возраста поиска"""
-        url = f'https://api.vk.com/method/users.get'
-        params = {'access_token': user_token,
-                  'fields': 'bdate',
-                  'user_ids': user_id,
-                  'v': v}
-        req = requests.get(url, params=params)
-        response = req.json()
-        try:
-            dict_info = response['response']
-            if parametr_search['age_min'] != '':
+        if parametr_search['age_min'] != '':
                 age_min = parametr_search['age_min']
                 return age_min
-            else:
-                for keys_item in dict_info:
+        else:
+                for keys_item in dict_user_get:
                     if 'bdate' in keys_item:
                         age = keys_item.get('bdate')
                         age_list = age.split('.')
@@ -194,8 +168,7 @@ class vk_group:
                                     age_user = event.text
                                     age_min = age_user - 5
                                     return age_min
-        except KeyError:
-            self.write_msg(user_id, 'Введен некорректный user_token')
+
 
     def age_min_edit(self,user_id):
         """Изменение минимального возраста"""
@@ -211,20 +184,11 @@ class vk_group:
 
     def age_max(self, user_id):
         """Получение максимального возраста поиска"""
-        url = f'https://api.vk.com/method/users.get'
-        params = {'access_token': user_token,
-                  'fields': 'bdate',
-                  'user_ids': user_id,
-                  'v': v}
-        req = requests.get(url, params=params)
-        response = req.json()
-        try:
-            dict_info = response['response']
-            if parametr_search['age_max'] != '':
+        if parametr_search['age_max'] != '':
                 age_max = parametr_search['age_max']
                 return age_max
-            else:
-                for keys_item in dict_info:
+        else:
+                for keys_item in dict_user_get:
                     if 'bdate' in keys_item:
                         age = keys_item.get('bdate')
                         age_list = age.split('.')
@@ -241,8 +205,7 @@ class vk_group:
                                     age_user = event.text
                                     age_min = age_user + 5
                                     return age_min
-        except KeyError:
-            self.write_msg(user_id, 'Введен некорректный user_token')
+
 
     def age_max_edit(self,user_id):
         """Изменение минимального возраста"""
@@ -258,35 +221,53 @@ class vk_group:
 
     def user_search(self, user_id):
         """Поиск человека по полученным данным"""
-        url = f'https://api.vk.com/method/users.search'
-        params = {'access_token': user_token,
-                  'user_ids': user_id,
-                  'v': v,
-                  'city': self.city_id(user_id),
-                  'sex': self.gender(user_id),
-                  'age_from': self.age_min(user_id),
-                  'age_to': self.age_max(user_id),
-                  'fields': 'is_closed, id, first_name, last_name, bdate',
-                  'status': '1' or '6',
-                  'count': 500}
-        req = requests.get(url, params=params)
-        response = req.json()
         try:
+            url = f'https://api.vk.com/method/users.search'
+            params = {'access_token': user_token,
+                      'user_ids': user_id,
+                      'v': v,
+                      'city': self.city_id(user_id),
+                      'sex': self.gender(user_id),
+                      'age_from': self.age_min(user_id),
+                      'age_to': self.age_max(user_id),
+                      'fields': 'is_closed, id, first_name, last_name, bdate',
+                      'status': '1' or '6',
+                      'count': 500,
+                      'offset': offset}
+            req = requests.get(url, params=params)
+            response = req.json()
             dict_info = response['response']
             list = dict_info['items']
-            for user_dict in list:
-                if user_dict.get('is_closed') == False:
-                    first_name = user_dict.get('first_name')
-                    last_name = user_dict.get('last_name')
-                    vk_id = str(user_dict.get('id'))
-                    vk_link = 'vk.com/id' + str(user_dict.get('id'))
-                    bdate = user_dict.get('bdate')
-                    insert_users_tab(first_name, last_name, vk_id, vk_link,bdate)
-                else:
-                    continue
-            return f'Поиск завершён'
+            for id_list in list:
+                dict_search.append(id_list)
+            return dict_search
+
         except KeyError:
             self.write_msg(user_id, 'Введен некорректный user_token')
+
+    def user_search_id (self,user_id):
+        while True:
+                for user_dict in dict_search:
+                    if user_dict.get('is_closed') == False:
+                        first_name = user_dict.get('first_name')
+                        last_name = user_dict.get('last_name')
+                        vk_id = user_dict.get('id')
+                        vk_link = 'vk.com/id' + str(user_dict.get('id'))
+                        bdate = user_dict.get('bdate')
+                        id_vk=str(vk_id)
+                        if id_vk not in dict_select:
+                            result.clear()
+                            result.append(
+                                {'first_name': first_name, 'last_name': last_name, 'id': vk_id, 'vk_link': vk_link,
+                                 'bdate': bdate})
+                            dict_select.append(id_vk)
+                            return result
+                        else:
+                            continue
+                break
+        self.write_msg(user_id, f"Поиск завершен ")
+        exit()
+
 
     def photos_id(self, user_id):
         """Получение фотографий пользователя"""
@@ -314,80 +295,48 @@ class vk_group:
         except KeyError:
             self.write_msg(user_id, 'Введен некорректный user_token')
 
-    def photo_user_1(self, user_id):
-        """Получение 1 фотографии"""
+    def photo_user(self, user_id,number_photo):
+        """Получение фотографии"""
         photo_list = self.photos_id(user_id)
         count=0
         for photo in photo_list:
             count += 1
-            if count == 1:
+            if count == number_photo:
                 return photo[1]
 
-    def photo_1_priview(self, user_id, message, offset):
-        """Вывод 1 фотографии"""
+    def photo_priview(self, user_id, message, number_photo):
+        """Вывод фотографии"""
         self.vk.method('messages.send', {'user_id': user_id,
                                          'access_token': user_token,
                                          'message': message,
-                                         'attachment': f'photo{self.id_user_priview(offset)}_{self.photo_user_1(self.id_user_priview(offset))}',
+                                         'attachment': f'photo{self.id_user_priview()}_{self.photo_user(self.id_user_priview(),number_photo)}',
                                          'random_id': 0})
 
-    def photo_user_2 (self, user_id):
-        """Плучение 2 фотографии"""
-        photo_list = self.photos_id(user_id)
-        count=0
-        for photo in photo_list:
-            count += 1
-            if count == 2:
-                return photo[1]
 
-    def photo_2_priview(self, user_id, message, offset):
-        """Вывод 2 фотографии"""
-        self.vk.method('messages.send', {'user_id': user_id,
-                                         'access_token': user_token,
-                                         'message': message,
-                                         'attachment': f'photo{self.id_user_priview(offset)}_{self.photo_user_2(self.id_user_priview(offset))}',
-                                         'random_id': 0})
-
-    def photo_user_3 (self, user_id):
-        """Получение 3 фотографии"""
-        photo_list = self.photos_id(user_id)
-        count=0
-        for photo in photo_list:
-            count += 1
-            if count == 3:
-                return photo[1]
-
-    def photo_3_priview(self, user_id, message, offset):
-        """Вывод 3 фотографии"""
-        self.vk.method('messages.send', {'user_id': user_id,
-                                         'access_token': user_token,
-                                         'message': message,
-                                         'attachment': f'photo{self.id_user_priview(offset)}_{self.photo_user_3(self.id_user_priview(offset))}',
-                                         'random_id': 0})
-
-    def id_user_priview(self, offset):
+    def id_user_priview(self):
         """Получение id найденного человека"""
-        base = select(offset)
-        dict_base = []
-        for i in base:
-            dict_base.append(i)
-        return str(dict_base[2])
+        for user_dict in result:
+            vk_id = user_dict.get('id')
+        return vk_id
 
-    def user_priview_info(self,user_id, offset):
+    def user_priview_info(self,user_id):
         """Вывод информации по найденноuго человека"""
-        base = select(offset)
-        dict_base = []
+        base = self.user_search_id(user_id)
         today = datetime.date.today()
-        for i in base:
-            dict_base.append(i)
-        dict_date = dict_base[4].split('.')
-        day = int(dict_date[0])
-        month = int(dict_date[1])
-        year = int(dict_date[2])
-        return f'{dict_base[0]} {dict_base[1]}\n' \
-               f'г.{self.city(user_id)}\n' \
-               f'Возраст: {today.year - year - ((today.month, today.day) < (month, day))} лет\n' \
-               f'Профиль vkontakte - {dict_base[3]}'
+        for user_dict in base:
+                first_name = user_dict.get('first_name')
+                last_name = user_dict.get('last_name')
+                vk_link = 'vk.com/id' + str(user_dict.get('id'))
+                bdate = user_dict.get('bdate')
+                dict_date = bdate.split('.')
+                day = int(dict_date[0])
+                month = int(dict_date[1])
+                year = int(dict_date[2])
+                return f'{first_name} {last_name}\n' \
+                   f'г.{self.city(user_id)}\n' \
+                   f'Возраст: {today.year - year - ((today.month, today.day) < (month, day))} лет\n' \
+                   f'Профиль vkontakte - {vk_link}'
+
 
 vkinder = vk_group()
 

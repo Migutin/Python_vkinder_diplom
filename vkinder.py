@@ -9,6 +9,7 @@ for event in vkinder.longpoll.listen():
             sending(user_id, text_button.lower(),keyboard)
             if request == "vkinder":
                 database()
+                vkinder.user_get(user_id)
                 vkinder.write_msg(event.user_id, f"Здравствуйте, {vkinder.name(user_id)}. "
                                                  f"Добро пожаловать в чат vkinder.\n"
                                                  f"\n"
@@ -21,19 +22,23 @@ for event in vkinder.longpoll.listen():
                                                  f"Начать поиск - нажать кнопку Next\n"
                                                  f"Изменить данные поиска - нажать кнопку Edit\n"
                                                  f"Выход - нажать кнопку Exit")
+                dict_search.clear()
+                select_id_database(offset)
                 vkinder.user_search(user_id)
             elif request == "next":
-                vkinder.id_user_priview(offset)
-                vkinder.write_msg(event.user_id,f'{vkinder.user_priview_info(user_id, offset)}')
-                vkinder.photos_id(vkinder.id_user_priview(offset))
-                vkinder.photo_1_priview(user_id, 'Фото 1', offset)
-                vkinder.photo_2_priview(user_id, 'Фото 2', offset)
-                vkinder.photo_3_priview(user_id, 'Фото 3', offset)
-                insert_users_tab_viewed(vkinder.id_user_priview(offset),offset)
+                vkinder.user_search_id(user_id)
+                vkinder.id_user_priview()
+                vkinder.write_msg(event.user_id,f'{vkinder.user_priview_info(user_id)}')
+                vkinder.photos_id(vkinder.id_user_priview())
+                vkinder.photo_priview(user_id, 'Фото 1',1)
+                vkinder.photo_priview(user_id, 'Фото 2',2)
+                vkinder.photo_priview(user_id, 'Фото 3',3)
+                insert_users_tab_viewed(vkinder.id_user_priview(),offset)
                 vkinder.write_msg(event.user_id, f"Поиск следующей анкеты - нажать кнопку Next\n"
                                                  f"Изменить данные поиска - нажать кнопку Edit\n"
                                                  f"Выход - нажать кнопку Exit")
             elif request == "edit":
+                dict_search.clear()
                 vkinder.city_edit(user_id)
                 vkinder.gender_exec(user_id, 'gender_edit')
                 vkinder.age_min_edit(user_id)
